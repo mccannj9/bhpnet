@@ -14,21 +14,20 @@ class TerminalUser(object):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((self.target, self.port))
 
-    def use_server_terminal(self):
+    def get_message_length(self):
+        buff = ""
         while True:
-            recv_len = 1
-            response = ""
+            c = self.client.recv(1).decode("utf-8")
+            if c == "|":
+                return int(buff)
+            else:
+                buff += c
 
-            while recv_len:
-                data = self.client.recv(4096)
-                recv_len = len(data)
-                response += data.decode("utf-8")
-
-                if recv_len < 4096:
-                    nl_count = response.count("\n")
-                    print(response + f"{nl_count} {recv_len} ", end="")
-                    recv_len = 1
-                    break
+    def use_server_terminal_2(self):
+        while True:
+            msg_length = self.get_message_length()
+            data = self.client.recv(msg_length)
+            print(data.decode("utf-8"), end="")
             try:
                 buff = input("")
                 buff += "\n"
@@ -36,7 +35,7 @@ class TerminalUser(object):
                 buff = buff.encode("utf-8")
                 self.client.send(buff)
             except EOFError:
-                print("\nGot EOF")
+                print("")
                 self.client.shutdown(socket.SHUT_RDWR)
                 self.client.close()
                 break
@@ -45,4 +44,4 @@ class TerminalUser(object):
 if __name__ == '__main__':
     user = TerminalUser()
     user.setup_client_connection()
-    user.use_server_terminal()
+    user.use_server_terminal_2()

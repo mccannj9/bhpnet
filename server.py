@@ -27,13 +27,16 @@ class TerminalServer(object):
         )
         while True:
             client_socket, addr = self.server.accept()
+            print(f"[*] Accepted connection from: {addr[0]}:{addr[1]}")
             client_thread = threading.Thread(
                 target=self.client_handle, args=(client_socket,)
             )
             client_thread.start()
 
     def client_handle(self, client_socket):
-        client_socket.send(self.prompt)
+        prompt_length = f"{len(self.prompt)}|".encode("utf-8")
+        client_socket.send(prompt_length + self.prompt)
+
         while True:
             self.cmd_buff = ""
 
@@ -42,16 +45,19 @@ class TerminalServer(object):
                 self.cmd_buff += data.decode("utf-8")
 
             self.cmd_buff = self.cmd_buff.rstrip()
-            print(self.cmd_buff)
             cmd_output = self.run_command()
-            print(f"Length of buff to be sent {len(cmd_output)}")
 
-            try:
-                client_socket.send(cmd_output)
-            except TypeError:
-                client_socket.send(cmd_output.encode("utf-8"))
+            if type(cmd_output) == str:
+                cmd_output = cmd_output.encode("utf-8")
+                cmd_output += "\n".encode("utf-8") + self.prompt
+                msg_length = f"{len(cmd_output)}|".encode("utf-8")
+            else:
+                cmd_output += self.prompt
+                msg_length = f"{len(cmd_output)}|".encode("utf-8")
 
-            client_socket.send(self.prompt)
+            print(f"{self.cmd_buff} {len(cmd_output)}")
+            cmd_output = msg_length + cmd_output
+            client_socket.send(cmd_output)
 
     def run_command(self):
         try:
