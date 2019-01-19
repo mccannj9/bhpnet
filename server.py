@@ -32,6 +32,13 @@ class TerminalServer(object):
                 target=self.client_handle, args=(client_socket,)
             )
             client_thread.start()
+            client_thread.join()
+            print(f"[*] Connection closed: {addr[0]}:{addr[1]}")
+
+    def close_server(self):
+        self.server.shutdown(socket.SHUT_RDWR)
+        self.server.close()
+        print(f"\n[*] Shutdown server at {self.target}:{self.port}")
 
     def client_handle(self, client_socket):
         prompt_length = f"{len(self.prompt)}|".encode("utf-8")
@@ -42,6 +49,8 @@ class TerminalServer(object):
 
             while "\n" not in self.cmd_buff:
                 data = client_socket.recv(1024)
+                if not(data.decode()):
+                    break
                 self.cmd_buff += data.decode("utf-8")
 
             self.cmd_buff = self.cmd_buff.rstrip()
@@ -57,7 +66,13 @@ class TerminalServer(object):
 
             print(f"{self.cmd_buff} {len(cmd_output)}")
             cmd_output = msg_length + cmd_output
-            client_socket.send(cmd_output)
+
+            try:
+                client_socket.send(cmd_output)
+            except BrokenPipeError:
+                break
+
+        return 0
 
     def run_command(self):
         try:
@@ -65,12 +80,23 @@ class TerminalServer(object):
                 self.cmd_buff, stderr=subprocess.STDOUT, shell=True
             )
         except Exception as err:
-            output = f"{self.cmd_buff} failed to execute.\r\n"
+            output = f"{self.cmd_buff} failed to execute."
 
         return output
 
 
+def main():
+    import sys, traceback
+    try:
+        term = TerminalServer()
+        term.setup_server()
+        term.run_server()
+    except KeyboardInterrupt:
+        term.close_server()
+    except Exception:
+        traceback.print_exc(file=sys.stdout)
+    sys.exit(0)
+
+
 if __name__ == '__main__':
-    term = TerminalServer()
-    term.setup_server()
-    term.run_server()
+    main()

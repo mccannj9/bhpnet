@@ -23,7 +23,7 @@ class TerminalUser(object):
             else:
                 buff += c
 
-    def use_server_terminal_2(self):
+    def use_server_terminal(self):
         while True:
             msg_length = self.get_message_length()
             data = self.client.recv(msg_length)
@@ -36,12 +36,13 @@ class TerminalUser(object):
                 self.client.send(buff)
             except EOFError:
                 print("")
-                self.client.shutdown(socket.SHUT_RDWR)
-                self.client.close()
                 break
+        self.client.shutdown(socket.SHUT_RDWR)
+        self.client.close()
+        return 0
 
 
 if __name__ == '__main__':
     user = TerminalUser()
     user.setup_client_connection()
-    user.use_server_terminal_2()
+    user.use_server_terminal()
