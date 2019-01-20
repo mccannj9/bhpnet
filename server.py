@@ -7,10 +7,10 @@ import subprocess
 
 class TerminalServer(object):
 
-    def __init__(self):
+    def __init__(self, target, port):
         self.prompt = "<BHP:#> $ ".encode("utf-8")
-        self.target = "127.0.0.1"
-        self.port = 9998
+        self.target = target
+        self.port = port
         self.max_connections = 5
 
     def setup_server(self):
@@ -43,18 +43,25 @@ class TerminalServer(object):
     def client_handle(self, client_socket):
         prompt_length = f"{len(self.prompt)}|".encode("utf-8")
         client_socket.send(prompt_length + self.prompt)
+        exit_message_received = False
 
         while True:
             self.cmd_buff = ""
 
             while "\n" not in self.cmd_buff:
                 data = client_socket.recv(1024)
-                if not(data.decode()):
-                    # print(
-                    #     f"[*] Connection closed: {addr[0]}:{addr[1]}"
-                    # )
-                    break
                 self.cmd_buff += data.decode("utf-8")
+                if self.cmd_buff.startswith("x404x"):
+                    exit_message_received = True
+                    addr = self.cmd_buff.split(":")
+                    print(
+                        f"[*] Client connection closed: {addr[1]}:{addr[2]}"
+                    )
+                    self.cmd_buff
+                    break
+
+            if exit_message_received:
+                break
 
             self.cmd_buff = self.cmd_buff.rstrip()
             cmd_output = self.run_command() + self.prompt
@@ -86,7 +93,7 @@ def main():
     import traceback
 
     try:
-        term = TerminalServer()
+        term = TerminalServer("127.0.0.1", 9998)
         term.setup_server()
         term.run_server()
     except KeyboardInterrupt:
