@@ -26,8 +26,8 @@ class TerminalUser(object):
 
     def use_server_terminal(self):
         exit_code = "x404x".encode("utf-8")
-        exit_msg = f":{self.address[0]}:{self.address[1]}".encode("utf-8")
-        exit_msg = exit_code + exit_msg
+        # exit_msg = f":{self.address[0]}:{self.address[1]}".encode("utf-8")
+        # exit_msg = exit_code + exit_msg
 
         while True:
             msg_length = self.get_message_length()
@@ -41,7 +41,7 @@ class TerminalUser(object):
                 self.client.send(buff)
             except (EOFError, KeyboardInterrupt):
                 print("")
-                self.client.send(exit_msg)
+                self.client.send(exit_code)
                 self.client.shutdown(socket.SHUT_RDWR)
                 self.client.close()
                 break
