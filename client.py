@@ -14,7 +14,6 @@ class TerminalUser(object):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((self.target, self.port))
         self.address = self.client.getsockname()
-        print(self.address[0], self.address[1])
 
     def get_message_length(self):
         buff = ""
