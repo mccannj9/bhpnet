@@ -4,6 +4,8 @@ import socket
 import threading
 import subprocess
 
+import time
+
 
 class TerminalServer(object):
 
@@ -25,6 +27,7 @@ class TerminalServer(object):
         print(
             f"[*] Starting server on {self.target}:{self.port}"
         )
+        threads = []
         while True:
             client_socket, addr = self.server.accept()
             print(
@@ -36,7 +39,16 @@ class TerminalServer(object):
                 )
             )
             client_thread.start()
-            # client_thread.join()
+            threads.append(client_thread)
+            for t in threads:
+                if t.is_alive():
+                    print("Thread is alive")
+                    continue
+                else:
+                    print(f"joining {t.ident}")
+                    t.join()
+                    threads.pop(t)
+            time.sleep(1)
 
     def close_server(self):
         self.server.shutdown(socket.SHUT_RDWR)
@@ -56,7 +68,6 @@ class TerminalServer(object):
                 self.cmd_buff += data.decode("utf-8")
                 if self.cmd_buff == "x404x":
                     exit_code_received = True
-                    # addr = self.cmd_buff.split(":")
                     print(
                         f"[*] Client connection closed: "
                         f"{client_ip}:{client_port}"

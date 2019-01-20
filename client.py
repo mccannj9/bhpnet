@@ -26,8 +26,6 @@ class TerminalUser(object):
 
     def use_server_terminal(self):
         exit_code = "x404x".encode("utf-8")
-        # exit_msg = f":{self.address[0]}:{self.address[1]}".encode("utf-8")
-        # exit_msg = exit_code + exit_msg
 
         while True:
             msg_length = self.get_message_length()
