@@ -26,6 +26,11 @@ class TerminalServer(object):
         self.outputs = []
         self.msg_queues = {}
 
+    def close_server(self):
+        self.server.shutdown(socket.SHUT_RDWR)
+        self.server.close()
+        print(f"\n[*] Shutdown server at {self.target}:{self.port}")
+
     def run_server(self):
         print(
             f"[*] Starting server on {self.target}:{self.port}"
@@ -38,7 +43,7 @@ class TerminalServer(object):
                 if sock is self.server:
                     client_socket, addr = self.server.accept()
                     print(
-                        f"[*] Accepted connection from: {addr[0]}:{addr[1]}"
+                        f"[O] Accepted connection from: {addr[0]}:{addr[1]}"
                     )
                     client_socket.setblocking(0)
                     self.inputs.append(client_socket)
@@ -72,7 +77,7 @@ class TerminalServer(object):
             if data == "x404x":
                 ip, port = client_socket.getpeername()
                 print(
-                    f"[*] Client connection closed: {ip}:{port}"
+                    f"[X] Client connection closed: {ip}:{port}"
                 )
                 return client_socket
             else:
@@ -87,11 +92,6 @@ class TerminalServer(object):
         if client_socket not in self.outputs:
             self.outputs.append(client_socket)
         return None
-
-    def close_server(self):
-        self.server.shutdown(socket.SHUT_RDWR)
-        self.server.close()
-        print(f"\n[*] Shutdown server at {self.target}:{self.port}")
 
     def run_command(self, cmd):
         try:
