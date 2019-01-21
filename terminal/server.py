@@ -112,8 +112,6 @@ def main():
         term = TerminalServer("127.0.0.1", 9998)
         term.setup_server()
         term.run_server()
-        # term.setup_server_select()
-        # term.run_server_select()
     except KeyboardInterrupt:
         term.close_server()
     except Exception:

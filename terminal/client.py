@@ -5,9 +5,9 @@ import socket
 
 class TerminalUser(object):
 
-    def __init__(self):
-        self.target = "127.0.0.1"
-        self.port = 9998
+    def __init__(self, target, port):
+        self.target = target
+        self.port = port
         self.history = []
 
     def setup_client_connection(self):
@@ -47,6 +47,6 @@ class TerminalUser(object):
 
 
 if __name__ == '__main__':
-    user = TerminalUser()
+    user = TerminalUser("127.0.0.1", 9998)
     user.setup_client_connection()
     user.use_server_terminal()
